@@ -2,7 +2,7 @@ import SwiftUI
 import OpenAPIURLSession
 
 struct ContentView: View {
-    private let apikey = "ВСТАВЬ_СВОЙ_API_KEY"
+    private let apikey = "3911a4d8-fa51-46d1-89d4-bceb90a9a37e"
 
     var body: some View {
         Text("TravelSchedule network demo")
