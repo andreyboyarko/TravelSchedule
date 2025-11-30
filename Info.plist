@@ -1,0 +1,9 @@
+{
+	UIAppFonts = (
+		"SF-Pro.ttf",
+		"SF-Pro-Display-Bold.otf",
+		"SF-Pro-Text-Regular.otf",
+	);
+	"UILaunchStoryboardName" = LaunchScreen;
+	CFBundleIdentifier = "";
+}

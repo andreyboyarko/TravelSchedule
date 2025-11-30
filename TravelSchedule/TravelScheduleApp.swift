@@ -1,9 +1,4 @@
-//
-//  TravelScheduleApp.swift
-//  TravelSchedule
-//
-//  Created by Andrei  Boyarko on 24/10/2025.
-//
+
 
 import SwiftUI
 
@@ -14,4 +9,14 @@ struct TravelScheduleApp: App {
             ContentView()
         }
     }
+
+private func configureTabBar() {
+    let appearance = UITabBarAppearance()
+    appearance.configureWithOpaqueBackground()
+    appearance.backgroundColor = UIColor.clear
+    appearance.shadowColor = .clear
+    
+    UITabBar.appearance().standardAppearance = appearance
+    UITabBar.appearance().scrollEdgeAppearance = appearance
+}
 }
