@@ -19,7 +19,7 @@ struct CityRowView: View {
         HStack {
             // Название города
             Text(place)
-                .foregroundColor(.appBlack)
+                .foregroundColor(.appText)
             
             Spacer()
             
