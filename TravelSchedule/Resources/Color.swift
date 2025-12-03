@@ -5,7 +5,7 @@ import SwiftUI
 
 extension Color {
     // цвета приложения с уникальными именами
-    static let appBlue          = Color("blueUniversal")
+    static let appBlue          = Color("BlueUniversal")
     static let appBlack         = Color("Black")
     static let appGrayUniversal = Color("grayUniversal")
 
