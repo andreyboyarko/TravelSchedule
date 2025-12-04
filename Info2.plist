@@ -1,0 +1,11 @@
+{
+	CFBundleIdentifier = "$(PRODUCT_BUNDLE_IDENTIFIER)";
+	CFBundleVersion = "Value: 1";
+	"CFBundleShortVersionString" = "Value: 1.0";
+	"Fronts provided by application" = (
+		"SF-Pro-Text-Regular.otf",
+		"SF-Pro-Display-Bold.otf",
+		"SF-Pro.ttf",
+	);
+	"UILaunchStoryboardName" = LaunchScreen;
+}
