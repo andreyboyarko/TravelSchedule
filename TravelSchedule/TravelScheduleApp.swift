@@ -4,9 +4,18 @@ import SwiftUI
 
 @main
 struct TravelScheduleApp: App {
+    
+    private var themeManager = ThemeManager()
+    
+    init() {
+        configureTabBar()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(themeManager)
+                .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         }
     }
 
