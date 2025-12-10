@@ -1,23 +1,23 @@
 
-
 import SwiftUI
 import Combine
 
 struct StoriesViewerView: View {
-
+    
     private let stories: [[Story]]
     private var viewModel: StoriesVM
     private let configuration: StoriesPlayerConfiguration
 
-    // выбранная история
+    // текущая история в текущей группе
     private var currentStory: Story {
-        let global = clamp(currentStoryGlobalIndex, min: 0, max: stories.count - 1)
-        let count = stories[global].count
-        let index = clamp(currentStoryIndex, min: 0, max: count - 1)
-        return stories[global][index]
+        let g = clamp(currentStoryGlobalIndex, min: 0, max: stories.count - 1)
+        let group = stories[g]
+        if group.isEmpty { return Story(image: "") } // 👈 так, без title/description
+        let idx = clamp(currentStoryIndex, min: 0, max: group.count - 1)
+        return group[idx]
     }
 
-    // номер выбранной истории внутри текущей группы
+    // индекс истории внутри текущей группы
     private var currentStoryIndex: Int {
         let count = stories[currentStoryGlobalIndex].count
         if count == 0 { return 0 }
@@ -25,11 +25,13 @@ struct StoriesViewerView: View {
         return clamp(rawIndex, min: 0, max: count - 1)
     }
 
-    @State private var currentStoryGlobalIndex: Int = 0 // индекс группы историй
-
+    @State private var currentStoryGlobalIndex: Int = 0
     @State private var progress: CGFloat = 0
     @State private var timer: Timer.TimerPublisher
     @State private var cancellable: Cancellable?
+
+    // сдвиг всех сторис при свайпе
+    @State private var dragOffset: CGFloat = 0
 
     init(stories: [[Story]], viewModel: StoriesVM) {
         self.stories = stories
@@ -39,23 +41,103 @@ struct StoriesViewerView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            StoryView(story: currentStory)
-                .allowsHitTesting(true)
+        GeometryReader { geo in
+            ZStack(alignment: .topTrailing) {
+                Color.black.ignoresSafeArea()
 
-            ProgressBar(
-                numberOfSections: stories[currentStoryGlobalIndex].count,
-                progress: progress
+                // --- СТЕК СТОРИС: предыдущая + текущая + следующая ---
+                ZStack {
+                    // предыдущая группа (слева)
+                    if currentStoryGlobalIndex > 0 {
+                        let prevIndex = currentStoryGlobalIndex - 1
+                        let prevStory = stories[prevIndex].first ?? currentStory
+                        StoryView(story: prevStory)
+                            .offset(x: -geo.size.width + dragOffset)
+                            .zIndex(0)
+                    }
+
+                    // текущая группа
+                    StoryView(story: currentStory)
+                        .offset(x: dragOffset)
+                        .zIndex(1)
+
+                    // следующая группа (справа)
+                    if currentStoryGlobalIndex < stories.count - 1 {
+                        let nextIndex = currentStoryGlobalIndex + 1
+                        let nextStory = stories[nextIndex].first ?? currentStory
+                        StoryView(story: nextStory)
+                            .offset(x: geo.size.width + dragOffset)
+                            .zIndex(0)
+                    }
+                }
+
+                // прогресс
+                ProgressBar(
+                    numberOfSections: stories[currentStoryGlobalIndex].count,
+                    progress: progress
+                )
+                .padding(.init(top: 28, leading: 12, bottom: 12, trailing: 12))
+
+                // тап-зоны как раньше
+                tapZone
+
+                // крестик
+                CloseButton(action: {
+                    viewModel.needClose()
+                })
+                .padding(.top, 57)
+                .padding(.trailing, 12)
+            }
+            .contentShape(Rectangle())
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { value in
+                        // ограничиваем движение, чтобы не уезжало дальше ширины экрана
+                        let width = geo.size.width
+                        let raw = value.translation.width
+                        dragOffset = max(-width, min(width, raw))
+                    }
+                    .onEnded { value in
+                        let dx = value.translation.width
+                        let width = geo.size.width
+                        let swipeThreshold: CGFloat = width * 0.25  // примерно четверть экрана
+
+                        // свайп влево → следующая группа
+                        if dx < -swipeThreshold,
+                           currentStoryGlobalIndex < stories.count - 1 {
+
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                dragOffset = -width
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                currentStoryGlobalIndex += 1
+                                progress = 0
+                                dragOffset = 0
+                                resetTimer()
+                            }
+
+                        // свайп вправо → предыдущая группа
+                        } else if dx > swipeThreshold,
+                                  currentStoryGlobalIndex > 0 {
+
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                dragOffset = width
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                currentStoryGlobalIndex -= 1
+                                progress = 0
+                                dragOffset = 0
+                                resetTimer()
+                            }
+
+                        } else {
+                            // не дотянули — просто возвращаемся
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                dragOffset = 0
+                            }
+                        }
+                    }
             )
-            .padding(.init(top: 28, leading: 12, bottom: 12, trailing: 12))
-
-            tapZone
-
-            CloseButton(action: {
-                viewModel.needClose()
-            })
-            .padding(.top, 57)
-            .padding(.trailing, 12)
         }
         .onAppear {
             timer = Self.createTimer(configuration: configuration)
@@ -113,6 +195,8 @@ struct StoriesViewerView: View {
         }
     }
 
+    // MARK: - ТАП: следующая / предыдущая сторис в группе
+
     private func nextStory() {
         let storiesCount = stories[currentStoryGlobalIndex].count
         guard storiesCount > 0 else { return }
@@ -148,13 +232,15 @@ struct StoriesViewerView: View {
         }
 
         if currentIndex > 0 {
-            // просто откатываем прогресс назад
+            // внутри группы
         } else if currentIndex <= 0 && currentStoryGlobalIndex > 0 {
             currentStoryGlobalIndex -= 1
         } else if currentIndex == 0 && currentStoryGlobalIndex == 0 {
             viewModel.needUpdateActualStory(globalNumber: currentStoryGlobalIndex)
         }
     }
+
+    // MARK: - Таймер
 
     private func resetTimer() {
         cancellable?.cancel()
