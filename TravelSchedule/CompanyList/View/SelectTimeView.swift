@@ -2,54 +2,63 @@
 
 import SwiftUI
 
-struct SelectTimeView: View {
+private enum Constants {
+    static let morning = "Утро 06:00 - 12:00"
+    static let day = "День 12:00 - 18:00"
+    static let afternoon = "Вечер 18:00 - 00:00"
+    static let night = "Ночь 00:00 - 06:00"
+    static let empty = "Данных нет"
+}
+
+struct ChooseTimeView: View {
     
-    @Bindable var viewModel: CompanyListViewModel
+    // MARK: - Properties
+
+    @Bindable var viewModel: FiltersViewModel
     let timeOfDay: TimeOfDay
     @State var imageState: String = "OffCheckBox"
     
+    // MARK: - Body
+
     var body: some View {
         switch timeOfDay {
         case .morning:
-            HStack {
-                Text("Утро 06:00 - 12:00")
-                    .font(.custom("SFPro-Regula", size: 17))
-                Spacer()
-                TimeCheckView(viewModel: viewModel,
-                           isOn: viewModel.morningButtonState.status,
-                           timeOfDay: .morning)
-            }
+            createTimeButton(text: Constants.morning,
+                             viewModel: viewModel,
+                             buttonStatus: viewModel.morningButtonState.status,
+                             timeOfDay: .morning)
         case .day:
-            HStack {
-                Text("День 12:00 - 18:00")
-                    .font(.custom("SFPro-Regula", size: 17))
-                Spacer()
-                TimeCheckView(viewModel: viewModel,
-                           isOn: viewModel.dayButtonState.status,
-                           timeOfDay: .day)
-                
-            }
+            createTimeButton(text: Constants.day,
+                             viewModel: viewModel,
+                             buttonStatus: viewModel.dayButtonState.status,
+                             timeOfDay: .day)
+            
         case .afternoon:
-            HStack {
-                Text("Вечер 18:00 - 00:00")
-                    .font(.custom("SFPro-Regula", size: 17))
-                Spacer()
-                TimeCheckView(viewModel: viewModel,
-                           isOn: viewModel.afternoonButtonState.status,
-                           timeOfDay: .afternoon)
-            }
+            createTimeButton(text: Constants.afternoon,
+                             viewModel: viewModel,
+                             buttonStatus: viewModel.afternoonButtonState.status,
+                             timeOfDay: .afternoon)
+            
         case .night:
-            HStack {
-                Text("Ночь 00:00 - 06:00")
-                    .font(.custom("SFPro-Regula", size: 17))
-                Spacer()
-                TimeCheckView(viewModel: viewModel,
-                           isOn: viewModel.nightButtonState.status,
-                           timeOfDay: .night)
-            }
+            createTimeButton(text: Constants.night,
+                             viewModel: viewModel,
+                             buttonStatus: viewModel.nightButtonState.status,
+                             timeOfDay: .night)
         case .none:
             Text("Данных нету")
         }
     }
-}
+    
+    // MARK: - Sub Methods
 
+    private func createTimeButton(text: String, viewModel: FiltersViewModel, buttonStatus: Bool, timeOfDay: TimeOfDay) -> some View {
+        HStack {
+            Text(text)
+                .font(.custom("SFPro-Regula", size: 17))
+            Spacer()
+            TimeCheckView(viewModel: viewModel,
+                           isOn: buttonStatus,
+                           timeOfDay: timeOfDay)
+        }
+    }
+}

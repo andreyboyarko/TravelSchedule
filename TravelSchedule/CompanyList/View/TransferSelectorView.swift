@@ -1,14 +1,13 @@
 
-
 import SwiftUI
 
 struct TransferSelectorView: View {
     let isOn: Bool
-    @Bindable var viewModel: CompanyListViewModel
+    @Bindable var viewModel: FiltersViewModel
     let needSwap: SwapOption
-    
+
     var body: some View {
-        VStack{
+        VStack {
             isOn ? Image("RadioButtonOn") : Image("RadioButtonOff")
         }
         .onTapGesture {
@@ -23,4 +22,3 @@ struct TransferSelectorView: View {
         }
     }
 }
-

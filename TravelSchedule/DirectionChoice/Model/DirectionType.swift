@@ -1,8 +1,8 @@
 
 
-enum DirectionType {
-    case from  // Откуда
-    case to    // Куда
+enum DirectionType: String, Sendable, Decodable {
+    case from = "Откуда"
+    case to = "Куда"
     case none
 }
 

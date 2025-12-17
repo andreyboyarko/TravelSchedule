@@ -1,34 +1,20 @@
 
 import SwiftUI
 
-/// Строка со станцией в списке выбора станции
 struct StationRowView: View {
-    
-    /// Навигационный путь из `MainScreenView`
     @Binding var navigationPath: NavigationPath
     
-    /// Название станции, отображаемое в ячейке
-    let station: String
-    
-    /// Общая вью-модель выбора города/станции
-    var viewModel: SelectCityViewModel
+    let station: SelectStationModel
+    var viewModel: SelectStationViewModel
     
     var body: some View {
-        HStack {
-            // Название станции
-            Text(station)
-            
+        HStack() {
+            Text(station.nameOfStation)
             Spacer()
-            
-            // Кнопка выбора станции
             Button(action: {
-                // Запоминаем выбранную станцию
-                viewModel.selectedStation = station
-                // Формируем итоговое направление (from/to)
-                viewModel.containsDestinationIfCan()
-                // Проверяем, можно ли активировать кнопку «Найти»
-                viewModel.activeIfAllAdds()
-                // Сбрасываем стек навигации до корня
+                viewModel.setStation(with: station)
+                viewModel.tryContainsDestination()
+                viewModel.tryActiveIfAdds()
                 navigationPath = NavigationPath()
             }) {
                 Image("NextButton")

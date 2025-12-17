@@ -1,70 +1,97 @@
+
+
 import SwiftUI
 
 struct SelectDirectionView: View {
     
+    // MARK: - Properties
+
     private let mainViewHeight: CGFloat = 128
-    
-    var viewModel: SelectCityViewModel
+    var chooseDirectionViewModel: SelectDirectionViewModel
     
     @Binding var navigationPath: NavigationPath
-    @Binding var activeDirection: DirectionType?
     
-    @State private var topButtonTitle   = "Откуда"
-    @State private var bottomButtonTitle = "Куда"
+    @State private var topButtonTitle = DirectionType.from.rawValue
+    @State private var bottomButtonTitle = DirectionType.to.rawValue
+    @State private var isSwapped = false
     
+    // MARK: - Body
+
     var body: some View {
         ZStack {
             HStack(spacing: 22) {
                 Spacer()
-                
                 VStack(spacing: 0) {
                     originButton
                     destinationButton
                 }
                 .frame(height: mainViewHeight * 0.8)
                 .frame(maxWidth: .infinity)
-                .background(Color.white)
+                .background(.white)
                 .cornerRadius(20)
                 
-                // Кнопка смены направлений
-                Button {
-                    viewModel.swapDirections()
-                } label: {
-                    Image("ChangeImage")
-                        .resizable()
-                        .frame(width: 36, height: 36)
-                }
-                
+                swapButton
                 Spacer()
             }
             .frame(maxHeight: mainViewHeight)
             .frame(maxWidth: .infinity)
-            .background(Color.blueUniversal)
+            .background(.blueUniversal)
             .cornerRadius(20)
             .padding()
         }
-        .onChange(of: viewModel.finalDirectionFrom) { _, newValue in
-            topButtonTitle = newValue ?? "Откуда"
+        .onChange(of:
+                    chooseDirectionViewModel.finalDirectionFrom) { _, newValue in
+            if let newCity = newValue {
+                topButtonTitle = newCity
+            } else {
+                topButtonTitle = DirectionType.from.rawValue
+            }
         }
-        .onChange(of: viewModel.finalDirectionTo) { _, newValue in
-            bottomButtonTitle = newValue ?? "Куда"
+                    .onChange(of:  chooseDirectionViewModel.finalDirectionTo) { _, newValue in
+                        
+                        if let newCity = newValue {
+                            bottomButtonTitle = newCity
+                        } else {
+                            bottomButtonTitle = DirectionType.to.rawValue
+                        }
+                    }
+                    .onAppear {
+                        if let needClean = chooseDirectionViewModel.needCleanData, needClean == true {
+                            chooseDirectionViewModel.needCleanSchedualList()
+                        }
+                    }
+    }
+    
+    // MARK: - Subviews
+
+    private var swapButton: some View {
+        Button(action: {
+            chooseDirectionViewModel.needSwapDirection()
+            isSwapped.toggle()
+        }) {
+            Image("ChangeImage")
+                .resizable()
+                .frame(width: 36, height: 36)
         }
     }
     
-    // MARK: - Кнопки
-    
     private var originButton: some View {
-        Button {
-            viewModel.needCityArray()
-            activeDirection = .from
+        Button(action: {
+            chooseDirectionViewModel.set(direction: .from)
             navigationPath.append(DirectionType.from)
-        } label: {
-            let isPlaceholder = (topButtonTitle == "Откуда")
-            
-            Text(isPlaceholder ? "Откуда" : topButtonTitle)
-                .font(.custom("SFPro-Regular", size: 17))
-                .foregroundColor(isPlaceholder ? .grayUniversal : .appBlack)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        }) {
+            // Верхняя кнопка всегда показывает FROM направление
+            if topButtonTitle == DirectionType.from.rawValue {
+                Text("Откуда")
+                    .font(.custom("SFPro-Regular", size: 17))
+                    .foregroundColor(.grayUniversal)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Text(topButtonTitle)
+                    .font(.custom("SFPro-Regular", size: 17))
+                    .foregroundColor(.appBlack)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .padding(.leading, 16)
         .padding(.vertical, 12)
@@ -73,17 +100,22 @@ struct SelectDirectionView: View {
     }
     
     private var destinationButton: some View {
-        Button {
-            viewModel.needCityArray()
-            activeDirection = .to
+        Button(action: {
+            chooseDirectionViewModel.set(direction: .to)
             navigationPath.append(DirectionType.to)
-        } label: {
-            let isPlaceholder = (bottomButtonTitle == "Куда")
-            
-            Text(isPlaceholder ? "Куда" : bottomButtonTitle)
-                .font(.custom("SFPro-Regular", size: 17))
-                .foregroundColor(isPlaceholder ? .grayUniversal : .appBlack)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        }) {
+            // Нижняя кнопка всегда показывает TO направление
+            if bottomButtonTitle == DirectionType.to.rawValue {
+                Text("Куда")
+                    .font(.custom("SFPro-Regular", size: 17))
+                    .foregroundColor(.grayUniversal)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Text(bottomButtonTitle)
+                    .font(.custom("SFPro-Regular", size: 17))
+                    .foregroundColor(.appBlack)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .padding(.leading, 16)
         .padding(.vertical, 13)
