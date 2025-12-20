@@ -86,8 +86,7 @@ struct CompanyCellView: View {
         VStack {
             HStack {
                 Text(companyModel.companyName)
-                    // ⚠️ Обрати внимание: "SFPro-Regula" выглядит как опечатка.
-                    // Обычно "SFPro-Regular". Если шрифт не находится — будет системный.
+
                     .font(.custom("SFPro-Regula", size: 17))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
