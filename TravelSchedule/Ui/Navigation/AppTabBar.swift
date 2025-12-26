@@ -1,35 +1,35 @@
-
 import SwiftUI
 
 struct AppTabBar: View {
+    
+    // MARK: - Properties
+    
     @State private var selectedTab: Int = 0
     @State private var hideTabBar = false
-    @State private var storiesViewModel = StoriesVM()
-
+    @State var errorViewModel = ErrorViewModel(actualStatus: .NoProblems)
+    @State var storiesService = StoriesService(model: StoriesDataProvider())
+    
+    // MARK: - Body
+    
     var body: some View {
         ZStack {
-            // Контент экранов
             Group {
-                            if selectedTab == 0 {
-                                MainScreenView(
-                                    hideTabBar: $hideTabBar,
-                                    storiesViewModel: storiesViewModel     // 👈 прокидываем внутрь
-                                )
-                            } else if selectedTab == 1 {
-                                SettingsScreenView(hideTabBar: $hideTabBar)
-                            } else {
-                                MainScreenView(
-                                    hideTabBar: $hideTabBar,
-                                    storiesViewModel: storiesViewModel
-                                )
-                            }
-                        }
+                switch selectedTab {
+                case 0:
+                    if errorViewModel.actualStatus == .NoProblems {
+                        MainScreenView(hideTabBar: $hideTabBar, storiesService: storiesService, errorViewModel: errorViewModel)
+                    } else {
+                        ErrorView(viewModel: errorViewModel)
+                    }
+                case 1:
+                    SettingsScreenView(hideTabBar: $hideTabBar)
+                default:
+                    MainScreenView(hideTabBar: $hideTabBar, storiesService: storiesService, errorViewModel: errorViewModel)
+                }
+            }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.appBackground)
-            .ignoresSafeArea()
-
+            .background(Color.background)
             
-            // Таббар
             if !hideTabBar {
                 VStack {
                     Spacer()
@@ -45,10 +45,10 @@ struct AppTabBar: View {
                         Spacer()
                     }
                     .padding(.vertical, 12)
-                    .background(Color.appBackground)
+                    .background(Color.background)
                     .overlay(
                         Rectangle()
-                            .fill(Color.color)
+                            .fill(Color.сolor)
                             .frame(height: 1),
                         alignment: .top
                     )
@@ -57,7 +57,8 @@ struct AppTabBar: View {
         }
     }
     
-    // Кнопка таббара
+    // MARK: - Sub Methods
+    
     private func tabButton(imageActive: String,
                            imageInactive: String,
                            index: Int) -> some View {

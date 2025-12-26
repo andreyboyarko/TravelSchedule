@@ -1,21 +1,22 @@
 
-
 import SwiftUI
 
 struct AgreementView:View {
+    
     @Binding var hideTabBar: Bool
+    var viewModel: SettingsViewModel
     
     var body: some View {
         VStack {
-            Text(verbatim: PracticumOfferText.offerTitle)
-                .font(.custom("SFPro-Regular", size: 24))
+            Text(viewModel.userAgreement.namesOffer)
+                .font(.custom("SFPro-Bold", size: 24))
             ScrollView {
-                Text(verbatim: PracticumOfferText.documentLink)
+                Text(viewModel.userAgreement.linkOfDocument)
                     .font(.custom("SFPro-Regula", size: 17))
                 Text("1. ТЕРМИНЫ")
                     .font(.custom("SFPro-Bold", size: 24))
                     .multilineTextAlignment(.leading)
-                Text(verbatim: PracticumOfferText.definitions)
+                Text(verbatim: viewModel.userAgreement.textDocument)
                 .font(.custom("SFPro-Regula", size: 17))
             }
             .multilineTextAlignment(.leading)
@@ -23,4 +24,5 @@ struct AgreementView:View {
         }
     }
 }
+
 
